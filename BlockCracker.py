@@ -57,8 +57,15 @@ def block_colision(old_ball_rect, ball_rect, matrix):
                     direction = -1
     return rect, direction
 
-def Loser(win, running, menu, reset, lives):
+def Loser(win, running, menu, reset, lives, score):
     pygame.mouse.set_visible(True)
+    if os.path.exists('highscore.txt'):
+        highscore = int(open('highscore.txt', 'r').read())
+    else:
+        highscore = 0
+    if score > highscore:
+        highscore = score
+        open('highscore.txt', 'w').write(str(highscore))
     while (not menu == True) and (not reset == True):
         pygame.time.delay(1)
         gameover = pygame.image.load("Images/Game Over.png")
@@ -73,19 +80,12 @@ def Loser(win, running, menu, reset, lives):
                 if 239 < x < 356 and 270 < y < 332:
                     reset = True
                     lives = 3
-                    return menu, reset, lives
+                    return menu, reset, lives, score, highscore
                 elif 239 < x < 356 and 360 < y < 422:
                     menu = True
                     lives = 3
-                    return menu, reset, lives
-    if os.path.exists('highscore.txt'):
-        highscore = int(open('highscore.txt', 'r').read())
-    else:
-        highscore = 0
-    if score > highscore:
-        highscore = score
-        open('highscore.txt', 'w').write(str(highscore))
-    return menu, reset, lives
+                    return menu, reset, lives, score, highscore
+    return menu, reset, lives, score, highscore
 
 def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
     broken_blocks = 0
@@ -98,7 +98,13 @@ def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
     score += 3000*lives
     lives = 3
     pygame.mouse.set_visible(True)
-    
+    if os.path.exists('highscore.txt'):
+        highscore = int(open('highscore.txt', 'r').read())
+    else:
+        highscore = 0
+    if score > highscore:
+        highscore = score
+        open('highscore.txt', 'w').write(str(highscore))    
     while (not menu == True) and (not reset == True):
         pygame.time.delay(1)
         gameover = pygame.image.load("Images/Win.png")
@@ -112,18 +118,11 @@ def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
                 (x,y) = pygame.mouse.get_pos()
                 if 239 < x < 356 and 270 < y < 332:
                     reset = True
-                    return menu, reset, lives
+                    return menu, reset, lives, score, highscore
                 elif 239 < x < 356 and 360 < y < 422:
                     menu = True
-                    return menu, reset, lives
-    if os.path.exists('highscore.txt'):
-        highscore = int(open('highscore.txt', 'r').read())
-    else:
-        highscore = 0
-    if score > highscore:
-        highscore = score
-        open('highscore.txt', 'w').write(str(highscore))
-    return menu, reset, lives
+                    return menu, reset, lives, score, highscore
+    return menu, reset, lives, score, highscore
     
 def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, lives, ball_rect, ball_color, ball_speed_x, ball_speed_y, block_len_x, block_len_y, matrix, block_hue, difficulty, score):
     start_matrix = copy.deepcopy(matrix)
@@ -212,10 +211,10 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
             pygame.mouse.set_visible(False)
             #Lose if lives == 0
             if lives == 0:
-                menu, reset, lives = Loser(win, running, menu, reset, lives)
+                menu, reset, lives, score, highscore = Loser(win, running, menu, reset, lives, score)
             
             elif matrix == [[0]*8]*7:
-                menu, reset, lives = Winner(win, running, menu, reset, lives, start_matrix, score, difficulty)
+                menu, reset, lives, score, highscore = Winner(win, running, menu, reset, lives, start_matrix, score, difficulty)
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
