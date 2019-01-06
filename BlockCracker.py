@@ -15,7 +15,15 @@ def scorecalc(broken_blocks):
     else:
         return broken_blocks + scorecalc(broken_blocks - 1)
 
-def lose_life(lives):
+def lose_life(lives, matrix, start_matrix, score, difficulty):
+    broken_blocks = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[0])):
+            if start_matrix[row][col] == 1 and matrix[row][col] == 0:
+                broken_blocks += 1
+    if broken_blocks != 0:
+        score += scorecalc(broken_blocks)*100*difficulty
+    start_matrix = copy.deepcopy(matrix)
     stick_rect.x = 260
     stick_rect.y = 500
     ball_rect.x = 300
@@ -23,7 +31,7 @@ def lose_life(lives):
     ball_speed_x = 1
     ball_speed_y = -1
     lives -= 1
-    return (stick_rect.x,stick_rect.y,ball_rect.x,ball_rect.y,ball_speed_x,ball_speed_y,lives)
+    return (stick_rect.x,stick_rect.y,ball_rect.x,ball_rect.y,ball_speed_x,ball_speed_y,lives, matrix, start_matrix, score)
 
 def colliderect(rect1, rect2):
     hcollide = rect1[0] <= rect2[0]+rect2[2] and rect1[0]+rect1[2] >= rect2[0]
@@ -70,11 +78,27 @@ def Loser(win, running, menu, reset, lives):
                     menu = True
                     lives = 3
                     return menu, reset, lives
+    if os.path.exists('highscore.txt'):
+        highscore = int(open('highscore.txt', 'r').read())
+    else:
+        highscore = 0
+    if score > highscore:
+        highscore = score
+        open('highscore.txt', 'w').write(str(highscore))
     return menu, reset, lives
 
-def Winner(win, running, menu, reset, lives):
+def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
+    broken_blocks = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[0])):
+            if start_matrix[row][col] == 1:
+                broken_blocks += 1
+    if broken_blocks != 0:
+        score += scorecalc(broken_blocks)*100*difficulty
+    score += 3000*lives
     lives = 3
     pygame.mouse.set_visible(True)
+    
     while (not menu == True) and (not reset == True):
         pygame.time.delay(1)
         gameover = pygame.image.load("Images/Win.png")
@@ -92,6 +116,13 @@ def Winner(win, running, menu, reset, lives):
                 elif 239 < x < 356 and 360 < y < 422:
                     menu = True
                     return menu, reset, lives
+    if os.path.exists('highscore.txt'):
+        highscore = int(open('highscore.txt', 'r').read())
+    else:
+        highscore = 0
+    if score > highscore:
+        highscore = score
+        open('highscore.txt', 'w').write(str(highscore))
     return menu, reset, lives
     
 def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, lives, ball_rect, ball_color, ball_speed_x, ball_speed_y, block_len_x, block_len_y, matrix, block_hue, difficulty, score):
@@ -114,7 +145,7 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
         elif difficulty == 2:
             clock.tick(500)
         else:
-            clock.tick(1000)
+            clock.tick(800)
             
         #Main menu
         if menu:
@@ -157,6 +188,7 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
             ball_speed_x = 1
             ball_speed_y = -1
             matrix = [[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,1,1,1,1,1,1,0],[0,1,1,1,1,1,1,0],[0,1,1,1,1,1,1,0],[0,1,1,1,1,1,1,0],[0,1,1,1,1,1,1,0]]
+            start_matrix = copy.deepcopy(matrix)
             reset = False
         
         ##Pause
@@ -183,7 +215,7 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
                 menu, reset, lives = Loser(win, running, menu, reset, lives)
             
             elif matrix == [[0]*8]*7:
-                menu, reset, lives = Winner(win, running, menu, reset, lives)
+                menu, reset, lives = Winner(win, running, menu, reset, lives, start_matrix, score, difficulty)
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -210,8 +242,6 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
                 old_ball_pos = (ball_rect.x, ball_rect.y)
                 ball_rect.x += ball_speed_x
                 ball_rect.y += ball_speed_y
-                if 0 >= ball_speed_y > -0.1:
-                    ball_speed_y = -0.1
                 if ball_rect.x + ball_rect.width >= 600:
                     ball_speed_x = -abs(ball_speed_x)
                 if ball_rect.x - ball_rect.width <= 0:
@@ -220,6 +250,7 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
                     ball_speed_y = abs(ball_speed_y)
                 if stick_rect.x <= ball_rect.x <= stick_rect.x + stick_rect.width and stick_rect.y - stick_rect.height//2 <= ball_rect.y <= stick_rect.y and ball_speed_y > 0:
                     rel_x = 2*((ball_rect.x - stick_rect.x)/stick_rect.width) - 1
+                    rel_x = 0.9*rel_x
                     rel_y = -1*(1-rel_x**2)**0.5
                     ball_speed_x = rel_x*2
                     ball_speed_y = rel_y
@@ -232,10 +263,8 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
                         score += scorecalc(broken_blocks)*100*difficulty
                     start_matrix = copy.deepcopy(matrix)
                 if ball_rect.y > 520:
-                    stick_rect.x,stick_rect.y,ball_rect.x,ball_rect.y,ball_speed_x,ball_speed_y,lives = lose_life(lives)
-                    if score > highscore:
-                        highscore = score
-                        open('highscore.txt', 'w').write(str(highscore))
+                    stick_rect.x,stick_rect.y,ball_rect.x,ball_rect.y,ball_speed_x,ball_speed_y,lives, matrix, start_matrix, score = lose_life(lives, matrix, start_matrix, score, difficulty)
+                
                 
                 ##Block collision
                 blocks, collision_dir = block_colision(
@@ -288,7 +317,7 @@ def Game(win, running, menu, reset, pause, difsel, stick_rect, stick_color, live
             pygame.mouse.set_visible(True)
             menuimage = pygame.image.load("Images/Main Menu.png")
             win.blit(menuimage,(0,0))
-            win.blit(highfont.render("Highscore: {0}".format(str(score)), 1, (255,255,255)),(20,560))
+            win.blit(highfont.render("Highscore: {0}".format(str(highscore)), 1, (255,255,255)),(20,560))
 
         pygame.display.update()
         
