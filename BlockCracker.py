@@ -91,7 +91,7 @@ def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
     broken_blocks = 0
     for row in range(len(matrix)):
         for col in range(len(matrix[0])):
-            if start_matrix[row][col] == 1:
+            if start_matrix[row][col] == 1 and matrix[row][col] == 0:
                 broken_blocks += 1
     if broken_blocks != 0:
         score += scorecalc(broken_blocks)*100*difficulty
@@ -120,6 +120,7 @@ def Winner(win, running, menu, reset, lives, start_matrix, score, difficulty):
                     reset = True
                     return menu, reset, lives, score, highscore
                 elif 239 < x < 356 and 360 < y < 422:
+                    reset = True
                     menu = True
                     return menu, reset, lives, score, highscore
     return menu, reset, lives, score, highscore
