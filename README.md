@@ -27,7 +27,7 @@ Having the module PyGame installed
 
 ## Authors
 
-* **Henrique Manuel Ruivo Pereira** - *Main work* - up201806538
+* **Henrique Manuel Ruivo Pereira** - *Main work* - up201806538@g.uporto.pt
 
 ## Acknowledgments
 
