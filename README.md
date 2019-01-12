@@ -35,4 +35,4 @@ Having the module PyGame installed
 
 ## Game Screenshot
 
-![Game Screenshot](BlockCracker/Main Menu.png "Game Screenshot")
+![Game Screenshot](Images/Main Menu.png "Game Screenshot")
