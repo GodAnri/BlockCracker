@@ -38,4 +38,4 @@ Having the module PyGame installed
 ![Game Screenshot](Images/Screenshot.png "Game Screenshot")
 
 ## Game Teaser
-[-> See video of the program running] (https://www.youtube.com/watch?v=DOpPj98eryU)
+* [See video of the program running](https://www.youtube.com/watch?v=DOpPj98eryU)
